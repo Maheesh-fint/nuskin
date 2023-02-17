@@ -23,6 +23,7 @@ export class ProductPage extends BasePage {
 
     constructor(page) {
         super(page);
+
         basePage = new BasePage(page);
         logger = new Logger({type: "pretty"});
         logger.attachTransport((logObj) => {
