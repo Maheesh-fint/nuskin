@@ -1,0 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ALLURE_METADATA_CONTENT_TYPE = void 0;
+var model_1 = require("./src/model");
+Object.defineProperty(exports, "ALLURE_METADATA_CONTENT_TYPE", { enumerable: true, get: function () { return model_1.ALLURE_METADATA_CONTENT_TYPE; } });
+//# sourceMappingURL=internal.js.map

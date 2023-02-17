@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+<<<<<<< HEAD
   <component name="ChangeListManager">
     <list default="true" id="63d8bdd4-1f78-4695-96ee-976ba5877bc2" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
@@ -15,6 +16,8 @@
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2Lr7JQie73NquA8J0uC9OXxzrTI" />
+=======
+>>>>>>> 2da0a97 (sample update)
   <component name="ProjectViewState">
     <option name="autoscrollFromSource" value="true" />
     <option name="autoscrollToSource" value="true" />
@@ -22,6 +25,7 @@
     <option name="showLibraryContents" value="true" />
     <option name="showMembers" value="true" />
   </component>
+<<<<<<< HEAD
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "RunOnceActivity.OpenProjectViewOnStart": "true",
@@ -57,5 +61,10 @@
         </entry>
       </map>
     </option>
+=======
+  <component name="PropertiesComponent">
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+>>>>>>> 2da0a97 (sample update)
   </component>
 </project>
