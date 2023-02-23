@@ -33,7 +33,6 @@
     "prettier": "^2.6.1"
   },
   "dependencies": {
-    "tslog": "^4.7.2",
-    "typescript-logging": "^1.0.0"
+    "tslog": "^4.7.2"
   }
 }

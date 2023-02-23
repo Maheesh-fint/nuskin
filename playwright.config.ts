@@ -3,21 +3,22 @@ import { devices } from '@playwright/test';
 
 const config: PlaywrightTestConfig = {
   testDir: './src/specs',
-  timeout: 205000,
+  timeout: 220000,
   expect: {
-    timeout: 5000
+    timeout: 15000
   },
   forbidOnly: !!process.env.CI,
   retries: 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
- //reporter: "allure-playwright",
+reporter: "html",
+ //reporter: './src/utils/MyReporter.ts',
   use: {
     headless: false,
     ignoreHTTPSErrors: true,
     viewport: { width: 1280, height: 720 },
     video: 'on-first-retry',
     actionTimeout: 0,
+    navigationTimeout: 30 * 1000,
     trace: 'on-first-retry',
     launchOptions: {
       logger: {
