@@ -55,7 +55,7 @@ export class ProductsContentPage extends BasePage {
         const count = (await this.page.$$(this.productImages)).length;
         logger.info('Total Products in Page ' + pageNo + ':[' + count + ']');
 
-        for (let productNo = 0; productNo < 2; productNo++) {
+        for (let productNo = 0; productNo < count; productNo++) {
           productNameValue = ''
           // looping all the products in the page
           try {
@@ -77,7 +77,7 @@ export class ProductsContentPage extends BasePage {
             logger.info('Page No:[' + pageNo + '] : Product: [' + (productNo + 1) + ']');
             logger.info('Product Name:[' + productNameValue + ']\n');
             logger.info('-------------------------------------------------------------------');
-            await productPage.createProductPage(String(productURL));
+            await productPage.createProductPage(String(productURL),String(productNameValue));
             //Image validation
             await productPage.verifyProductImageDetails();
             //Price validation
@@ -88,7 +88,7 @@ export class ProductsContentPage extends BasePage {
             await productPage.validateIngrediatntsDetails();
             //Product Kit validation
             await productPage.validateProductKitDetails();
-            await productPage.closeProductPage();
+           // await productPage.closeProductPage();
           } catch (error) {
 
            // if (error instanceof playwright.errors.TimeoutError){
@@ -97,7 +97,8 @@ export class ProductsContentPage extends BasePage {
             continue;
             //  }
           } finally {
-            await productPage.closeProductPage();
+           // logger.info("finally :productNameValue---===---"+productNameValue);
+            await productPage.closeProductPage(String(productNameValue));
             logger.info('-------------------------------------------------------------------');
           }
         }
@@ -106,17 +107,17 @@ export class ProductsContentPage extends BasePage {
         logger.info('Products not available in page:' + pageNo);
       }
       if (await basePage.isElementVisisble(this.nextLink)) { // checking next page available
-        this.isNextPageAvaialable = 'false';
+        this.isNextPageAvaialable = 'true';
         logger.info('FINISHED Page No:[' + pageNo + '] ');
         logger.info('-------------------------------------------------------------------');
-        // logger.info('Page No::[' + ++pageNo + ']');
-        // pageNo = pageNo + 1;
-        // url =
-        //   (await homePage.getCurrentProductUR(productCategory)) +
-        //   '?page=' +
-        //   pageNo;
-        // basePage.navigateToPage(url);
-        // expect(this.page).toHaveURL(url,{timeout:220000});
+     //   logger.info('Page No::[' + ++pageNo + ']');
+        pageNo = pageNo + 1;
+        url =
+          (await homePage.getCurrentProductUR(productCategory)) +
+          '?page=' +
+          pageNo;
+        basePage.navigateToPage(url);
+        expect(this.page).toHaveURL(url);
       } else {
         this.isNextPageAvaialable = 'false';
       }
