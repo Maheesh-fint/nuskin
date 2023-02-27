@@ -22,7 +22,7 @@ test.describe('NUSKIN Product scenarios', () => {
   // });
 
   // test('Nuskin Skin & Beauty product content verification', async ({ page,playwright}, testInfo) => {
-  //   test.setTimeout(120000);
+  
   //   basePage = new BasePage(page);
   //   homePage = new HomePage(page);
   //   productsContentPage = new ProductsContentPage(page);
@@ -31,17 +31,17 @@ test.describe('NUSKIN Product scenarios', () => {
   //   await productsContentPage.clickEachProduct('Skin & Beauty',testInfo,playwright);
   // });
 
-  // test('Nuskin Nutrition product content verification', async ({ page,playwright}, testInfo) => {
-  //   basePage = new BasePage(page);
-  //   homePage = new HomePage(page);
-  //   productsContentPage = new ProductsContentPage(page);
-  //   await basePage.navigate();
-  //   await homePage.gotoProduct('Nutrition');
-  //   await productsContentPage.clickEachProduct('Nutrition',testInfo,playwright);
-  // });
+  test('Nuskin Nutrition product content verification', async ({baseURL,page,playwright}, testInfo) => {
+    basePage = new BasePage(page);
+    homePage = new HomePage(page);
+    productsContentPage = new ProductsContentPage(page);
+    await basePage.navigate();
+    await homePage.gotoProduct('Nutrition');
+    await productsContentPage.clickEachProduct('Nutrition',testInfo,playwright,baseURL);
+  });
 
   // test('Nuskin Product Lines product content verification', async ({ page,playwright}, testInfo) => {
-  //   //test.setTimeout(120000);
+ 
   //   basePage = new BasePage(page);
   //   homePage = new HomePage(page);
   //   productsContentPage=new ProductsContentPage(page);
@@ -50,14 +50,22 @@ test.describe('NUSKIN Product scenarios', () => {
   //   await productsContentPage.clickEachProduct("Product Lines",testInfo,playwright);
   // });
 
-  test('Nuskin New & Loved product content verification', async ({ page,playwright}, testInfo) => {
-    basePage = new BasePage(page);
-    homePage = new HomePage(page);
-    productsContentPage = new ProductsContentPage(page);
-    await basePage.navigate();
-    await homePage.gotoProduct('New & Loved');
-    await productsContentPage.clickEachProduct('New & Loved',testInfo,playwright);
-  //   const screenshot = await page.screenshot();
-  //  await testInfo.attach('screenshot', { body: screenshot, contentType: 'image/png' });
-  });
+  // test('Nuskin New & Loved product content verification', async ({baseURL, page,playwright}, testInfo) => {
+  //   basePage = new BasePage(page);
+  //   homePage = new HomePage(page);
+  //   productsContentPage = new ProductsContentPage(page);
+  //   await basePage.navigate();
+  //   await homePage.gotoProduct('New & Loved');
+  //   await productsContentPage.clickEachProduct('New & Loved',testInfo,playwright,baseURL);
+  // });
+  // test('Nuskin content verification for single Product ', async ({baseURL,page,playwright}, testInfo) => {
+  //  // let productUrl = baseURL+"/us/en/product/wellness-premium-kit-US";
+  //   let productUrl =baseURL+"/us/en/product/probio-pcc?categoryId=all_products";
+  //   basePage = new BasePage(page);
+  //   homePage = new HomePage(page);
+  //   productsContentPage = new ProductsContentPage(page);
+  //   await basePage.navigate();
+  //   await productsContentPage.validateSingleProduct(productUrl,testInfo,playwright);
+  // });
+
 });

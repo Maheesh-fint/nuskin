@@ -82,33 +82,33 @@ export class BasePage {
     return await page.isVisible(locator);
 }
 
-async waitUntilPageLoadHTML(page2:Page) {
+// async waitUntilPageLoadHTML(page2:Page) {
     
-  const waitTillHTMLRendered = async (page2, timeout = 220000) => {
-    const checkDurationMsecs = 1000;
-    const maxChecks = timeout / checkDurationMsecs;
-    let lastHTMLSize = 0;
-    let checkCounts = 1;
-    let countStableSizeIterations = 0;
-    const minStableSizeIterations = 3;
-    while (checkCounts++ <= maxChecks) {
-      let html = await page2.content();
-      let currentHTMLSize = html.length;
-      let bodyHTMLSize = await page2.evaluate(() => document.body.innerHTML.length);
-      // console.log('last: ', lastHTMLSize, ' <> curr: ', currentHTMLSize, " body html size: ", bodyHTMLSize);
-      if (lastHTMLSize != 0 && currentHTMLSize == lastHTMLSize)
-        countStableSizeIterations++;
-      else
-        countStableSizeIterations = 0; //reset the counter
-      if (countStableSizeIterations >= minStableSizeIterations) {
-       //  logger.info("Page loaded..");
-        break;
-      }
-      lastHTMLSize = currentHTMLSize;
-      await setTimeout(5000);
-      // await page.waitForTimeout(checkDurationMsecs);
-    }
-  };
-  waitTillHTMLRendered(page2);
-}
+//   const waitTillHTMLRendered = async (page2, timeout = 220000) => {
+//     const checkDurationMsecs = 1000;
+//     const maxChecks = timeout / checkDurationMsecs;
+//     let lastHTMLSize = 0;
+//     let checkCounts = 1;
+//     let countStableSizeIterations = 0;
+//     const minStableSizeIterations = 3;
+//     while (checkCounts++ <= maxChecks) {
+//       let html = await page2.content();
+//       let currentHTMLSize = html.length;
+//       let bodyHTMLSize = await page2.evaluate(() => document.body.innerHTML.length);
+//       // console.log('last: ', lastHTMLSize, ' <> curr: ', currentHTMLSize, " body html size: ", bodyHTMLSize);
+//       if (lastHTMLSize != 0 && currentHTMLSize == lastHTMLSize)
+//         countStableSizeIterations++;
+//       else
+//         countStableSizeIterations = 0; //reset the counter
+//       if (countStableSizeIterations >= minStableSizeIterations) {
+//        //  logger.info("Page loaded..");
+//         break;
+//       }
+//       lastHTMLSize = currentHTMLSize;
+//       await setTimeout(5000);
+//       // await page.waitForTimeout(checkDurationMsecs);
+//     }
+//   };
+//   waitTillHTMLRendered(page2);
+// }
 }

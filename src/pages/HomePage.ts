@@ -12,7 +12,7 @@ export class HomePage extends BasePage {
     
     let productURL = await this.getCurrentProductUR(product);
     await this.page.goto(productURL);
-    this.waitUntilPageLoadHTML(this.page);
+   // this.waitUntilPageLoadHTML(this.page);
     await this.page.context().clearCookies();
     expect(this.page).toHaveURL(String(productURL));
   }
@@ -29,14 +29,14 @@ export class HomePage extends BasePage {
         break;
       case 'Nutrition':
        // url= String('https://nuglobalbasev1-uat.skavacommerce.com/us/en/catalog/all_nutrition');
-        url= String('https://nuglobalbasev1-uat.skavacommerce.com/us/en/catalog/green_tea');
+        url= String('https://nuglobalbasev1-uat.skavacommerce.com/us/en/catalog/all_products?filter=%7B%22filters%22%3A%5B%7B%22field%22%3A%22facet_productCategory%22%2C%22operation%22%3A%22IN%22%2C%22value%22%3A%22all_nutrition%22%7D%5D%7D');
         break;
       case 'Product Lines':
       //  url= String('https://nuglobalbasev1-uat.skavacommerce.com/us/en/catalog/all_products');
         url= String('https://nuglobalbasev1-uat.skavacommerce.com/us/en/catalog/lumispa');
         break;
       case 'New & Loved':
-        //url= String('https://nuglobalbasev1-uat.skavacommerce.com/us/en/catalog/all_new_andloved');
+       // url= String('https://nuglobalbasev1-uat.skavacommerce.com/us/en/catalog/all_new_andloved');
         url= String('https://nuglobalbasev1-uat.skavacommerce.com/us/en/catalog/lumispa_kits');
         break;
     }

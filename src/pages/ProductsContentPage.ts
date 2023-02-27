@@ -30,7 +30,7 @@ export class ProductsContentPage extends BasePage {
   public readonly noProductImage = "(//*[contains(text(),'No Product')])[1]";
   public readonly totalProducts = " //*[@class='product-count']";
 
-  async clickEachProduct(productCategory: string, testInfo: TestInfo, playwright: typeof import('playwright-core')) {
+  async clickEachProduct(productCategory: string, testInfo: TestInfo, playwright: typeof import('playwright-core'),baseURL:string) {
     productPage = new ProductPage(this.page, testInfo);
     const sleep = (ms: number | undefined) => {
       return new Promise((resolve) => setTimeout(resolve, ms));
@@ -38,7 +38,7 @@ export class ProductsContentPage extends BasePage {
     logger.info('Product Category:[' + productCategory + ']');
     let url = await this.page.url();
     let pageNo = 1;
-    if ((await this.page.title()).indexOf('Product Not Found') === -1) {
+    if ((await this.page.title()).indexOf('Product Not Found') === -1 && (await this.page.title()).indexOf('Page Not Found') === -1) {
       await this.page.waitForSelector(this.totalProducts);
       let totalProducts = (await this.page.locator(this.totalProducts).textContent());
       totalProducts = String(totalProducts).split(" ")[0].replace("(", "");
@@ -48,8 +48,9 @@ export class ProductsContentPage extends BasePage {
 
     let productNameValue = '';
     do {
-
-      if ((await this.page.title()).indexOf('Product Not Found') === -1) {
+     let pageTitle= await this.page.title();
+      if (pageTitle.indexOf('Product Not Found') === -1 && pageTitle.indexOf('Page Not Found') === -1) {
+   
         await this.page.waitForSelector(this.productImages);
         expect(this.page.locator(this.productImages).nth(1)).toBeVisible();
         const count = (await this.page.$$(this.productImages)).length;
@@ -70,14 +71,14 @@ export class ProductsContentPage extends BasePage {
               basePage.navigateToPage(url);
               productNameValue += await this.page.textContent(productNameXpath);
             }
-            const productURL = await this.page
+            const productURL =baseURL+await this.page
               .locator(this.productImages)
               .nth(productNo)
               .getAttribute('href');
             logger.info('Page No:[' + pageNo + '] : Product: [' + (productNo + 1) + ']');
             logger.info('Product Name:[' + productNameValue + ']\n');
             logger.info('-------------------------------------------------------------------');
-            await productPage.createProductPage(String(productURL),String(productNameValue));
+            await productPage.createProductPage(String(productURL),productNameValue);
             //Image validation
             await productPage.verifyProductImageDetails();
             //Price validation
@@ -98,7 +99,7 @@ export class ProductsContentPage extends BasePage {
             //  }
           } finally {
            // logger.info("finally :productNameValue---===---"+productNameValue);
-            await productPage.closeProductPage(String(productNameValue));
+            await productPage.closeProductPage();
             logger.info('-------------------------------------------------------------------');
           }
         }
@@ -114,17 +115,30 @@ export class ProductsContentPage extends BasePage {
         pageNo = pageNo + 1;
         url =
           (await homePage.getCurrentProductUR(productCategory)) +
-          '?page=' +
+          '&page=' +
           pageNo;
+          console.log("url===-==-==-==-=="+url);
         basePage.navigateToPage(url);
         expect(this.page).toHaveURL(url);
       } else {
         this.isNextPageAvaialable = 'false';
       }
     } while (this.isNextPageAvaialable == 'true');
-  //   await productPage.createProductPage("url");
-  //   await productPage.validateProductKitDetails();
-  //   await productPage.closeProductPage();
+ 
    }
-
+   async validateSingleProduct(productUrl: string, testInfo: TestInfo, playwright: typeof import('playwright-core')) {
+    productPage = new ProductPage(this.page, testInfo);
+    await productPage.createProductPage(String(productUrl),'Product Not Found');
+   // Image validation
+    await productPage.verifyProductImageDetails();
+    //Price validation
+    await productPage.validateProductPriceDetails();
+    //How To Use It validation
+    await productPage.validateHowToUseIt();
+    //Ingrediatnts validation
+    await productPage.validateIngrediatntsDetails();
+    //Product Kit validation
+     await productPage.validateProductKitDetails();
+     await productPage.closeProductPage();
+  }
 }

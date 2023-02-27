@@ -1,9 +1,8 @@
 import type { PlaywrightTestConfig } from '@playwright/test';
 import { devices } from '@playwright/test';
-
 const config: PlaywrightTestConfig = {
   testDir: './src/specs',
-  timeout: 220000000,
+  timeout: 1940000,
   expect: {
     timeout: 15000
   },
@@ -13,6 +12,7 @@ const config: PlaywrightTestConfig = {
 reporter: "html",
  //reporter: './src/utils/MyReporter.ts',
   use: {
+    baseURL: 'https://nuglobalbasev1-uat.skavacommerce.com',
     headless: false,
     ignoreHTTPSErrors: true,
     viewport: { width: 1280, height: 720 },
