@@ -1,4 +1,4 @@
 export const user = {
-  baseUrl: 'https://nuglobalbasev1-uat.skavacommerce.com/',
+  baseUrl: 'https://test.nuskin.com',
   password: 'hare8181'
 };

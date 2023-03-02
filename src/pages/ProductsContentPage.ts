@@ -28,9 +28,10 @@ export class ProductsContentPage extends BasePage {
   public isNextPageAvaialable = 'false';
   public readonly productImages = "//a[@class='image-container-wrap']";
   public readonly noProductImage = "(//*[contains(text(),'No Product')])[1]";
-  public readonly totalProducts = " //*[@class='product-count']";
+  public readonly totalProducts = "//*[@class='product-count']";
 
-  async clickEachProduct(productCategory: string, testInfo: TestInfo, playwright: typeof import('playwright-core'),baseURL:string) {
+  async clickEachProduct(productCategory: string, testInfo: TestInfo,baseURL:string, brand:string) {
+    let totalProductscount;
     productPage = new ProductPage(this.page, testInfo);
     const sleep = (ms: number | undefined) => {
       return new Promise((resolve) => setTimeout(resolve, ms));
@@ -40,9 +41,9 @@ export class ProductsContentPage extends BasePage {
     let pageNo = 1;
     if ((await this.page.title()).indexOf('Product Not Found') === -1 && (await this.page.title()).indexOf('Page Not Found') === -1) {
       await this.page.waitForSelector(this.totalProducts);
-      let totalProducts = (await this.page.locator(this.totalProducts).textContent());
-      totalProducts = String(totalProducts).split(" ")[0].replace("(", "");
-      logger.info('Total Products:[' + totalProducts + ']');
+       totalProductscount = (await this.page.locator(this.totalProducts).textContent());
+      totalProductscount = String(totalProductscount).split(" ")[0].replace("(", "");
+      logger.info('Total Products:[' + totalProductscount + ']');
       // logger.info('Page No:[' + pageNo + ']');
     }
 
@@ -79,6 +80,8 @@ export class ProductsContentPage extends BasePage {
             logger.info('Product Name:[' + productNameValue + ']\n');
             logger.info('-------------------------------------------------------------------');
             await productPage.createProductPage(String(productURL),productNameValue);
+            //Product avaialability
+            await productPage.verifyProductStatus();
             //Image validation
             await productPage.verifyProductImageDetails();
             //Price validation
@@ -99,7 +102,7 @@ export class ProductsContentPage extends BasePage {
             //  }
           } finally {
            // logger.info("finally :productNameValue---===---"+productNameValue);
-            await productPage.closeProductPage();
+            await productPage.closeProductPage(pageNo,(productNo + 1),totalProductscount);
             logger.info('-------------------------------------------------------------------');
           }
         }
@@ -114,9 +117,13 @@ export class ProductsContentPage extends BasePage {
      //   logger.info('Page No::[' + ++pageNo + ']');
         pageNo = pageNo + 1;
         url =
-          (await homePage.getCurrentProductUR(productCategory)) +
-          '&page=' +
-          pageNo;
+          (await homePage.getCurrentProductUR(productCategory));
+          if(brand==='brand'){
+            url+= '&page=';
+            }else{
+              url+= '?page=';
+            }
+      url+= pageNo;
           console.log("url===-==-==-==-=="+url);
         basePage.navigateToPage(url);
         expect(this.page).toHaveURL(url);
@@ -126,10 +133,12 @@ export class ProductsContentPage extends BasePage {
     } while (this.isNextPageAvaialable == 'true');
  
    }
-   async validateSingleProduct(productUrl: string, testInfo: TestInfo, playwright: typeof import('playwright-core')) {
+   async validateSingleProduct(productUrl: string, testInfo: TestInfo) {
     productPage = new ProductPage(this.page, testInfo);
     await productPage.createProductPage(String(productUrl),'Product Not Found');
-   // Image validation
+    //Product avaialability
+    await productPage.verifyProductStatus();
+    // Image validation
     await productPage.verifyProductImageDetails();
     //Price validation
     await productPage.validateProductPriceDetails();
@@ -139,6 +148,6 @@ export class ProductsContentPage extends BasePage {
     await productPage.validateIngrediatntsDetails();
     //Product Kit validation
      await productPage.validateProductKitDetails();
-     await productPage.closeProductPage();
+     await productPage.closeProductPage(1,1,"1");
   }
 }

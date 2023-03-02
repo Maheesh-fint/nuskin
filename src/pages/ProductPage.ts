@@ -48,7 +48,10 @@ export class ProductPage extends BasePage {
   public readonly keyIngredientsName = "//*[@class='key-ingredients-inner d-flex flex-row align-items-center mb-4']//h4";
   public readonly keyIngredientsContent = "//*[@class='key-ingredients-inner d-flex flex-row align-items-center mb-4']//p";
   public readonly activeIngredients = "//*[text()='Active Ingredients']";
-  public readonly activeIngredientsContent = "//*[text()='Active Ingredients']";
+  public readonly activeIngredientsContent = "//*[text()='Active Ingredients']/../p";
+  public readonly allIngredients = "//h4[text()='All Ingredients']/../p";
+  public readonly allIngredientsContent = "//h4[text()='All Ingredients']/../p";
+
   public readonly otherIngredient = "//h4[text()='Other Ingredients']/../p";
   public readonly otherIngredientContent = "//h4[text()='Other Ingredients']/../p";
   public readonly otherIngredientimg = "//*[@class='Otheringredient-img']";
@@ -62,6 +65,8 @@ export class ProductPage extends BasePage {
   public readonly productKitTextPath = "//h4[contains(text(),'Items in this Bundle')]";
   public readonly totalKitItems = "//h4[contains(text(),'Items in this Bundle')]/../..//div[1]//span[1]"
   public readonly kitItemsDivPath = "//h4[contains(text(),'Items in this Bundle')]/../../..//div[@class='border-top border-dark py-2 w-100 row no-gutters']";
+  public readonly emptySpace = "//div[@class='error-wrapper ']";
+  public readonly prdAvailable = "//*[@data-testid='qa-product-availability']";
 
   private fs = require('fs');
 
@@ -71,7 +76,7 @@ export class ProductPage extends BasePage {
     url = productURL;
     await setTimeout(2000);
     prductpage = await this.page.context().newPage();
-    await prductpage.goto(url, { timeout: 123000000 });
+    await prductpage.goto(url);
     //this.waitUntilPageLoadHTML(prductpage)
     await prductpage.waitForLoadState();
     await prductpage.context().clearCookies();
@@ -79,12 +84,13 @@ export class ProductPage extends BasePage {
     logText = '<html><head><style>';
     logText += ' table, th, td {';
     logText += 'border: 1px solid black;';
-    logText += '  border-collapse: collapse;';
+    logText += 'border-collapse: collapse;';
+    logText += 'text-align:center;';
     logText += '}</style>';
     expect(prductpage).toHaveURL(url);
     //console.log("&&&^^^%%*******************>"+await this.page.title());
     //(await this.page.title()).indexOf('Product Not Found') !== -1 
-    if (!((await prductpage.title()).indexOf('Product Not Found') === -1) || (await prductpage.title()).indexOf('Page Not Found') === 9) {
+    if (!((await prductpage.title()).indexOf('Product Not Found') === -1) || (await prductpage.title()).indexOf('Page Not Found') === 9 || (await prductpage.$$(this.emptySpace)).length > 0) {
       productNameValue = productName;
       logText += '<title>' + productNameValue + '</title></head><body>'
       logText += '<b>ProductName:</b>' + productNameValue + "--> <b>Product URL:</b>" + url + "<br>";
@@ -96,12 +102,15 @@ export class ProductPage extends BasePage {
     } else {
       productNameValue = await prductpage.locator(this.prdName).textContent();
       logText += '<title>' + productNameValue + '</title></head><body>'
-      logText += '<div><b>ProductName:</b>' + productNameValue + "<b><br>URL:</b>" + url + "<br>";
+      logText += '<div><b><u>ProductName:</u></b> &nbsp;&nbsp;' + productNameValue + "<b><br><br><u>URL:</u></b> &nbsp;" + url + "<br><br>";
     }
 
     await setTimeout(2000);
   }
-  async closeProductPage() {
+  async closeProductPage(pageNo: number, prdNo: number, totalProducts: string) {
+    await setTimeout(2000);
+    await prductpage.evaluate(() => window.scrollTo(0, 0))
+    await setTimeout(2000);
     screenshot = await prductpage.screenshot({ fullPage: true });
     // await producPageTestInfo.attach('screenshot', { body: screenshot, contentType: 'image/png' });
     const b64 = screenshot.toString('base64');
@@ -109,40 +118,56 @@ export class ProductPage extends BasePage {
     logText += "</div>";
     logText += '</body></html>'
     let prdName = String(productNameValue).replace('/', '');
-    this.createFile(logText, 'TestLogs');
     await setTimeout(2000);
-    await producPageTestInfo.attach(String(prdName), { contentType: "text/plain", path: 'TestLogs.html' });
-    prductpage.close();
-    await setTimeout(4000);
-    this.fs.unlink('TestLogs.html', function (err) {
-      if (err) {
-        throw err
-      } else {
-        console.log("Successfully deleted the file " + String(prdName) + '.html')
-      }
+    let pageName;
 
-    })
+    if (pageNo > 1) {
+      prdNo = ((pageNo - 1) * 12) + prdNo;
+    }
+    pageName = String(prdName + "[" + prdNo + " of " + totalProducts + "]");
+
+    let fileName = String(pageName).replace(/ /g, "_");
+    this.createFile(logText, fileName);
+    await setTimeout(4000);
+    await producPageTestInfo.attach(pageName, { contentType: "text/plain", path: fileName + '.html' });
+    await setTimeout(4000);
+    try {
+      this.fs.unlink(fileName + '.html', function (err) {
+        if (err) {
+          throw err
+        } else {
+          console.log("Successfully deleted the file " + fileName + '.html')
+        }
+
+      })
+    } catch (err) {
+      logger.error("error message while deleting a file " + fileName + ": " + err.message);
+    } finally {
+      prductpage.close();
+    }
+
   }
   createFile(myText: string, productNameValue: string) {
-    //const myText = 'Hi!\r\n';
+
     this.fs.writeFileSync('./' + productNameValue + '.html', myText);
+
   }
 
   async verifyProductImageDetails() {
     await setTimeout(2000);
-    if (((await prductpage.title()).indexOf('Product Not Found') === -1) && (await prductpage.title()).indexOf('Page Not Found') === -1) {
+    if (((await prductpage.title()).indexOf('Product Not Found') === -1) && (await prductpage.title()).indexOf('Page Not Found') === -1 && (await prductpage.$$(this.emptySpace)).length === 0) {
       expect(prductpage.locator(this.imageNumber)).toBeVisible();
       const imageCount = (
         await prductpage.locator(this.imageNumber).textContent()
       )?.charAt(4);
       let i = Number(imageCount);
-      logText += '<div><b>Images:</b>';
+      logText += '<div><b><u>Images:</u></b><br><br>';
       logger.info('Total Images:[' + i + ']');
       logger.info("----------\n");
       let j = 1;
       if (i > 0) {
         logText += '<table><tr><td><b>Total Images</b></td><td><b>Available at</b></td></tr>'
-        logText += '<tr><td>[' + i + ']</td><td>';
+        logText += '<tr><td >[' + i + ']</td><td>';
 
         do { // loop for checking images
           const locator = prductpage.locator(this.imagePath);
@@ -198,12 +223,23 @@ export class ProductPage extends BasePage {
     logText += "</div>";
     await setTimeout(2000);
   }
+  async verifyProductStatus() {
+    if (((await prductpage.title()).indexOf('Product Not Found') === -1) && (await prductpage.title()).indexOf('Page Not Found') === -1 && (await prductpage.$$(this.emptySpace)).length === 0) {
+      logText += '<div><b><u>Product Availability:</u></b>';
+      if ((await prductpage.$$(this.prdAvailable)).length > 0) {
+        let productStatus = await prductpage.locator(this.prdAvailable).textContent();
+        logText += '<b style="color:red" >&nbsp;&nbsp;' + productStatus + '</b></div><br>';
+      } else {
+        logText += '<b style="color:green" >&nbsp;&nbsp;YES</b></div><br>';
+      }
+    }
+  }
   async validateProductPriceDetails() {
     await setTimeout(2000);
-    if (((await prductpage.title()).indexOf('Product Not Found') === -1) && (await prductpage.title()).indexOf('Page Not Found') === -1) {
+    if (((await prductpage.title()).indexOf('Product Not Found') === -1) && (await prductpage.title()).indexOf('Page Not Found') === -1 && (await prductpage.$$(this.emptySpace)).length === 0) {
       const pricePositionsCount = (await prductpage.$$(this.priceTags)).length;
 
-      logText += "<div><b>Price:<b><br>"
+      logText += "<br><div><b><u>Price:</u><b><br><br>"
       logText += '<table><tr><td><b>Total Price Count</b></td><td><b>Price At</b></td></tr>'
 
       logText += '<tr><td>[' + pricePositionsCount + ']</td><td>';
@@ -257,10 +293,9 @@ export class ProductPage extends BasePage {
 
   async validateHowToUseIt() {
 
-    if (((await prductpage.title()).indexOf('Product Not Found') === -1) && (await prductpage.title()).indexOf('Page Not Found') === -1) {
+    if (((await prductpage.title()).indexOf('Product Not Found') === -1) && (await prductpage.title()).indexOf('Page Not Found') === -1 && (await prductpage.$$(this.emptySpace)).length === 0) {
       const howUseIt = (await prductpage.$$(this.howUseItButtonPath)).length;
-      logText += "<div><table><tr><td><b>How To Use It:</td>"
-      logText += '<td><b>Content available</b></td><td>'
+      logText += "<br><div><b><u>How To Use It Content available:</u></b>"
       // logText += "How To Use It:\n-------------\n";
       logger.info("How To Use It:");
       logger.info("-------------\n");
@@ -270,29 +305,29 @@ export class ProductPage extends BasePage {
         await prductpage.waitForSelector(this.howUseItContent);
         const howUseItContent = await prductpage.locator(this.howUseItContent).textContent();
         if (String(howUseItContent).length > 0) {
-          logText += "<b style='color:green'>YES</b>"
+          logText += "<b style='color:green'>&nbsp;YES</b></div>"
           logger.info("               Content available\n");
         } else {
-          logText += "<b>NO</b>"
+          logText += "<b style='color:green'>&nbsp;NO</b></div>"
           logger.info("                 Content not available\n");
         }
       } else {
-        logText += "<b style='color:blue'>Section not available</b>"
+        logText += "<b style='color:blue'>Section not available</b></div>"
         logger.info("                 Section not available\n");
       }
-      logText += '</td></tr></table>'
+
     }
   }
 
   async validateIngrediatntsDetails() {
     await setTimeout(2000);
-    if (((await prductpage.title()).indexOf('Product Not Found') === -1) && (await prductpage.title()).indexOf('Page Not Found') === -1) {
-      logText += "<div><b>Ingredients:</b><br>"
+    if (((await prductpage.title()).indexOf('Product Not Found') === -1) && (await prductpage.title()).indexOf('Page Not Found') === -1 && (await prductpage.$$(this.emptySpace)).length === 0) {
+      logText += "<br><div><b><u>Ingredients:</u></b><br>"
       //  logText += "Ingredients:\n-------------\n";
       logger.info("Ingredients:");
       logger.info("-------------\n");
       const ingredientsElement = (await prductpage.$$(this.ingredientsPath)).length;
-  
+
       if (ingredientsElement > 0) {
         await prductpage.click(this.ingredientsPath);
         await setTimeout(2000);
@@ -301,20 +336,21 @@ export class ProductPage extends BasePage {
           const ingredientImageSrc = await prductpage
             .locator(this.otherIngredientimgFile)
             .getAttribute('src');
+          logText += '<br><div><b>Ingredient Image displayed:</b>';
           if (String(ingredientImageSrc).indexOf('image-not-found') === -1) {
-            logText += '<div><b style="color:green">Ingredient Image displayed</b><br></div>';
+            logText += '<b style="color:green">&nbsp;YES</b><br></div>';
             logger.info("Image displayed");
           } else {
-            logText += "<b>Image not displayed</b><br>";
+            logText += '<b style="color:red">&nbsp;NO</b><br></div>';
             logger.info("Image not displayed");
           }
         }
 
         let ingredientImages = (await prductpage.$$(this.keyIngredientsImages)).length;
-        logText += "<div><table>";
+        logText += "<br><div><table>";
         if (ingredientImages > 0) {
           logText += "<tr><td colspan='3' style='text-align: center;'><b>Total Ingredients:[" + ingredientImages + "]</b></td></tr>";
-          logText += '<tr><td><b>Ingredient Name</b></td><td><b>Content available</b></td><td><b>Image Available</b></td></tr>';
+          logText += '<tr><td><b>Ingredient Name</b></td><td><b>Content Available</b></td><td><b>Image Available</b></td></tr>';
 
           logger.info("Total Ingredients:[" + ingredientImages + "]");
           logger.info("------------------------\n");
@@ -343,7 +379,7 @@ export class ProductPage extends BasePage {
                   logText += '<td><b style="color:green"> YES</b></td>'
                   logger.info('        IMage Available \n');
                 } else {
-                  logText += '<td><b style="color:red">NO</b> <br> URL:' + url + '</td>';
+                  logText += '<td><b style="color:red">NO</b></td>';
                   logger.error(
                     '                 IMage not Available ');
                   logger.error('URL:' + url + '\n');
@@ -358,57 +394,76 @@ export class ProductPage extends BasePage {
             }
           } while (ingredientImages > 0);
         }
-          logText += "<tr><td><b>Active Ingredients:</b></td>"
-          logger.info("Active Ingredients:");
-          logger.info("-------------------\n");
-          let activeIngredientsLength = (await prductpage.$$(this.activeIngredients)).length;
-          if (activeIngredientsLength > 0) {
-            const activeIngredientsContent = await prductpage.locator(this.activeIngredientsContent).textContent();
-            if (String(activeIngredientsContent).length > 0) {
-              logText += "<td colspan='2'><b style='color:green'>Content available</b></td></tr>";
-              logger.info("               Content available\n");
-            } else {
-              logText += "<td colspan='2'><b style='color:red'>Content not available</b></td></tr>";
-              logger.info("               Content not available\n");
-            }
+        logText += "<tr><td><b>All Ingredients:</b></td>"
+        logger.info("All Ingredients:");
+        logger.info("-------------------\n");
+        let allIngredientsLength = (await prductpage.$$(this.allIngredients)).length;
+        if (allIngredientsLength > 0) {
+          const allIngredientsContent = await prductpage.locator(this.allIngredientsContent).textContent();
+          if (String(allIngredientsContent).length > 0) {
+            logText += "<td colspan='2'><b style='color:green'>Content available</b></td></tr>";
+            logger.info("               Content available\n");
           } else {
-            logText += "<td colspan='2'><b style='color:blue'>Section not available</b></td></tr>";
-            logger.info("                 Section not available\n");
+            logText += "<td colspan='2'><b style='color:red'>Content not available</b></td></tr>";
+            logger.info("               Content not available\n");
           }
-          logText += "<tr><td><b>Other Ingredients:</b></td>"
-          logger.info("Other Ingredients:");
-          logger.info("-------------\n");
-          let otherIngredientsLength = (await prductpage.$$(this.otherIngredient)).length;
-          if (otherIngredientsLength > 0) {
-            const otherIngredientsContent = await prductpage.locator(this.otherIngredientContent).textContent();
-            if (String(otherIngredientsContent).length > 0) {
-              logText += "<td colspan='2'><b style='color:green'>Content available</b></td></tr></table></div>";
-              logger.info("               Content available\n");
-            } else {
-              logText += "<td colspan='2'><b style='color:red'>Content not available</b></td></tr></table></div>";
-              logger.info("               Content not available\n");
-            }
-
-          } else {
-            logText += "<td colspan='2'><b style='color:blue'>Section not available</b></td></tr></table></div>";
-            logger.info("                 Section not available\n");
-          }
-        }
-        else {
-          logText += "<b style='color:blue'>Section not available</b><br>";
+        } else {
+          logText += "<td colspan='2'><b style='color:blue'>Section not available</b></td></tr>";
           logger.info("                 Section not available\n");
         }
-        logText += "</div>";
-      } 
-     
-    
+
+
+        logText += "<tr><td><b>Active Ingredients:</b></td>"
+        logger.info("Active Ingredients:");
+        logger.info("-------------------\n");
+        let activeIngredientsLength = (await prductpage.$$(this.activeIngredients)).length;
+        if (activeIngredientsLength > 0) {
+          const activeIngredientsContent = await prductpage.locator(this.activeIngredientsContent).textContent();
+          if (String(activeIngredientsContent).length > 0) {
+            logText += "<td colspan='2'><b style='color:green'>Content available</b></td></tr>";
+            logger.info("               Content available\n");
+          } else {
+            logText += "<td colspan='2'><b style='color:red'>Content not available</b></td></tr>";
+            logger.info("               Content not available\n");
+          }
+        } else {
+          logText += "<td colspan='2'><b style='color:blue'>Section not available</b></td></tr>";
+          logger.info("                 Section not available\n");
+        }
+        logText += "<tr><td><b>Other Ingredients:</b></td>"
+        logger.info("Other Ingredients:");
+        logger.info("-------------\n");
+        let otherIngredientsLength = (await prductpage.$$(this.otherIngredient)).length;
+        if (otherIngredientsLength > 0) {
+          const otherIngredientsContent = await prductpage.locator(this.otherIngredientContent).textContent();
+          if (String(otherIngredientsContent).length > 0) {
+            logText += "<td colspan='2'><b style='color:green'>Content available</b></td></tr></table></div>";
+            logger.info("               Content available\n");
+          } else {
+            logText += "<td colspan='2'><b style='color:red'>Content not available</b></td></tr></table></div>";
+            logger.info("               Content not available\n");
+          }
+
+        } else {
+          logText += "<td colspan='2'><b style='color:blue'>Section not available</b></td></tr></table></div>";
+          logger.info("                 Section not available\n");
+        }
+      }
+      else {
+        logText += "<b style='color:blue'>Section not available</b><br>";
+        logger.info("                 Section not available\n");
+      }
+      logText += "</div>";
+    }
+
+
     await setTimeout(2000);
   }
 
   async validateProductKitDetails() {
     await setTimeout(2000);
-    if (((await prductpage.title()).indexOf('Product Not Found') === -1) && (await prductpage.title()).indexOf('Page Not Found') === -1) {
-      logText += "<div><div><b>Product KIT:</b><br>";
+    if (((await prductpage.title()).indexOf('Product Not Found') === -1) && (await prductpage.title()).indexOf('Page Not Found') === -1 && (await prductpage.$$(this.emptySpace)).length === 0) {
+      logText += "<br><div><div><b><u>Product KIT:</u></b><br>";
       logger.info("Product KIT:");
       logger.info("-------------\n");
       const productKit = (await prductpage.$$(this.productKitTextPath)).length;

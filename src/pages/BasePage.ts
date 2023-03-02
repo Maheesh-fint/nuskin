@@ -13,7 +13,7 @@ export class BasePage {
   }
 
   async navigate() {
-    await this.page.goto(user.baseUrl,{timeout:540000});
+    await this.page.goto(user.baseUrl);
     await this.page.context().clearCookies();
   }
 

@@ -12,7 +12,7 @@ const config: PlaywrightTestConfig = {
 reporter: "html",
  //reporter: './src/utils/MyReporter.ts',
   use: {
-    baseURL: 'https://nuglobalbasev1-uat.skavacommerce.com',
+    baseURL: 'https://test.nuskin.com',
     headless: false,
     ignoreHTTPSErrors: true,
     viewport: { width: 1280, height: 720 },
